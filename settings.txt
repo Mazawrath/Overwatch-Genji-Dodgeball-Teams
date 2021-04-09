@@ -16,7 +16,15 @@ settings
 
 	modes
 	{
-		Deathmatch
+		disabled Bounty Hunter
+		{
+			Allow Hero Switching: Off
+			Game Mode Start: Immediately
+			Hero Limit: Off
+			Respawn As Random Hero: On
+		}
+
+		disabled Deathmatch
 		{
 			Allow Hero Switching: Off
 			Game Length In Minutes: 15
@@ -24,6 +32,15 @@ settings
 			Hero Limit: Off
 			Respawn As Random Hero: On
 			Self Initiated Respawn: Off
+		}
+
+		Team Deathmatch
+		{
+			Allow Hero Switching: Off
+			Game Length In Minutes: 15
+			Game Mode Start: Immediately
+			Hero Limit: Off
+			Respawn As Random Hero: On
 
 			enabled maps
 			{
