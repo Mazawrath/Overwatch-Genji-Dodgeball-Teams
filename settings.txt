@@ -124,6 +124,7 @@ variables
 		45: ImprovedExplosions
 		46: RandomExplosionSounds
 		47: FinalDuelNuke
+		48: IncorrectTeam2Config
 
 	player:
 		0: hasMoved
@@ -1952,5 +1953,45 @@ rule("No Undermaps")
 	{
 		Global.BallDirection *= Vector(1, 0, 1);
 		Play Effect(All Players(All Teams), Ring Explosion, Color(White), Global.BallPosition, 2);
+	}
+}
+
+rule("Players in unauthorized slots")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Players In Slot(0, Team 2) == True || Players In Slot(1, Team 2) == True || Players In Slot(2, Team 2) == True) == True;
+	}
+
+	actions
+	{
+		Global.IncorrectTeam2Config = True;
+		If(Players In Slot(0, Team 2) == True);
+			Small Message(All Players(All Teams), Custom String(
+				"{0} is not allowed in this slot! The game will not function properly with a player in slot 1 on team 2!", Players In Slot(0,
+				Team 2)));
+			Wait(1, Ignore Condition);
+		End;
+		If(Players In Slot(1, Team 2) == True);
+			Small Message(All Players(All Teams), Custom String(
+				"{0} is not allowed in this slot! The game will not function properly with a player in slot 2 on team 2!", Players In Slot(1,
+				Team 2)));
+			Wait(1, Ignore Condition);
+		End;
+		If(Players In Slot(2, Team 2) == True);
+			Small Message(All Players(All Teams), Custom String(
+				"{0} is not allowed in this slot! The game will not function properly with a player in slot 3 on team 2!", Players In Slot(2,
+				Team 2)));
+			Wait(1, Ignore Condition);
+		End;
+		Big Message(All Players(All Teams), Custom String(""));
+		Wait(5, Ignore Condition);
+		Loop If Condition Is True;
+		Global.IncorrectTeam2Config = False;
 	}
 }
