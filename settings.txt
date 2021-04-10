@@ -1772,6 +1772,7 @@ rule("Team 1 Last Surviving")
 		End;
 		Heal(All Players(All Teams), Null, 200);
 		Abort If(!Global.IsEnoughPlayersToStart);
+		Abort If(Global.IncorrectTeam2ConfigCheck);
 		Global.RoundInProgress = False;
 		All Players(All Teams).BouncePadCooldown = Global.BouncePadCooldownLength;
 		Global.SlotOfTargetedPlayer = -1;
@@ -1836,6 +1837,7 @@ rule("Team 2 Last Surviving")
 		End;
 		Heal(All Players(All Teams), Null, 200);
 		Abort If(!Global.IsEnoughPlayersToStart);
+		Abort If(Global.IncorrectTeam2ConfigCheck);
 		Global.RoundInProgress = False;
 		All Players(All Teams).BouncePadCooldown = Global.BouncePadCooldownLength;
 		Global.SlotOfTargetedPlayer = -1;
