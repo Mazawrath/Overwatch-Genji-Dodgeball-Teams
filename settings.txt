@@ -1570,7 +1570,8 @@ rule("Ball reaches player")
 		End;
 		Chase Global Variable At Rate(BallDirection, Direction Towards(Global.BallPosition, Eye Position(Players In Slot(
 			Global.SlotOfTargetedPlayer, All Teams))), 6, Destination and Rate);
-		Loop If Condition Is True;
+		"If deflecting and stuff breaks...disabling this is why."
+		disabled Loop If Condition Is True;
 	}
 }
 
