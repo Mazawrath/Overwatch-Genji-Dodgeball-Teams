@@ -1692,7 +1692,7 @@ rule("Team 1 Last Surviving")
 	actions
 	{
 		Global.IsInFinalDuel = False;
-		Modify Player Score(All Living Players(All Teams), 1);
+		Modify Team Score(Team 1, 1);
 		Wait(0.250, Ignore Condition);
 		If((Match Time == 0 || Global.TieBreakerActive) && Global.GameEndEnabled);
 			"If there is alredy a tiebreaker, then the tiebreaker has ended."
@@ -1755,7 +1755,7 @@ rule("Team 2 Last Surviving")
 	actions
 	{
 		Global.IsInFinalDuel = False;
-		Modify Player Score(All Living Players(All Teams), 1);
+		Modify Team Score(Team 2, 1);
 		Wait(0.250, Ignore Condition);
 		If((Match Time == 0 || Global.TieBreakerActive) && Global.GameEndEnabled);
 			"If there is alredy a tiebreaker, then the tiebreaker has ended."
