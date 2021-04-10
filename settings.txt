@@ -318,7 +318,7 @@ rule("Init player variables")
 	actions
 	{
 		Event Player.IsDashEnabled = False;
-		disabled Set Status(Event Player, Null, Invincible, 9999);
+		Set Status(Event Player, Null, Invincible, 9999);
 		Skip If(Global.CooldownDashingEnabled, 1);
 		Set Ability 1 Enabled(Event Player, False);
 		Disable Built-In Game Mode Respawning(Event Player);
@@ -1544,9 +1544,7 @@ rule("Ball reaches player")
 		Global.BallDirection = Facing Direction Of(Players In Slot(Global.SlotOfTargetedPlayer, All Teams));
 		Wait(0.001, Ignore Condition);
 		If(Is Button Held(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Button(Secondary Fire)));
-			Damage(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Null, Global.PassingDamage);
-			Small Message(All Players(All Teams), Custom String("{0}", Count Of(Filtered Array(All Players(Team Of(Players In Slot(
-				Global.SlotOfPreviousTargetedPlayer, All Teams))), True))));
+			Set Player Health(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Global.PassingDamage);
 			"If the member is the only one left on their team, self pass"
 			If(Count Of(Filtered Array(All Living Players(Team Of(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams))), True))
 				== 1);
