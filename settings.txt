@@ -128,6 +128,7 @@ variables
 		49: IncorrectTeam2ConfigHUD
 		50: IncorrectTeam2ConfigHUDColor
 		51: InGameTeam2ConfigHUD
+		52: PassingDamage
 
 	player:
 		0: hasMoved
@@ -361,6 +362,7 @@ rule("Init global variables")
 		Global.CooldownDashingEnabled = True;
 		Global.IncorrectTeam2ConfigCheck = False;
 		Global.IncorrectTeam2ConfigHUDColor = Color(Red);
+		Global.PassingDamage = 100;
 	}
 }
 
@@ -1511,29 +1513,20 @@ rule("Ball reaches player")
 
 	actions
 	{
-		If(Is Button Held(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Button(Secondary Fire)) && Is Button Held(
-			Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Button(Ability 1)) && Is Button Held(Players In Slot(
-			Global.SlotOfTargetedPlayer, All Teams), Button(Ability 2)));
+		"Attempting a pass"
+		If(Is Button Held(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Button(Secondary Fire)) && (Is Button Held(
+			Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Button(Ability 1)) || Is Button Held(Players In Slot(
+			Global.SlotOfTargetedPlayer, All Teams), Button(Ability 2))));
+			"If they don't have enough health, kill em"
+			If(Health(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)) <= Global.PassingDamage);
+				Call Subroutine(DeflectFailed);
+			End;
 		End;
 		Skip If(Is Using Ability 2(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)) || Is Using Ability 1(Players In Slot(
 			Global.SlotOfTargetedPlayer, All Teams)), 1);
 		Call Subroutine(DeflectFailed);
 		disabled Skip If(Is Using Ability 2(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)) || Is Using Ability 1(Players In Slot(
 			Global.SlotOfTargetedPlayer, All Teams)), 13);
-		disabled Set Status(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Players In Slot(Global.SlotOfPreviousTargetedPlayer,
-			All Teams), Stunned, 1);
-		disabled If(Global.ImprovedExplosions == True);
-		disabled Call Subroutine(UpdatedDeathEffects);
-		disabled Else;
-		disabled Call Subroutine(CoolDeathEffects);
-		disabled End;
-		disabled Players In Slot(Global.SlotOfTargetedPlayer, All Teams).BouncePadCooldown = 0;
-		disabled Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams).CurrentUltPercent += 15;
-		disabled Kill(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams));
-		disabled Players In Slot(Global.SlotOfTargetedPlayer, All Teams).PlayerDeaths += 1;
-		disabled Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams).PlayerKills += 1;
-		disabled Global.BallDeleteRequested = True;
-		disabled Abort;
 		If(Is Using Ability 1(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)));
 			Set Status(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Null, Knocked Down, 1);
 			Teleport(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Global.BallPosition);
@@ -1551,14 +1544,15 @@ rule("Ball reaches player")
 		Global.BallDirection = Facing Direction Of(Players In Slot(Global.SlotOfTargetedPlayer, All Teams));
 		Wait(0.001, Ignore Condition);
 		If(Is Button Held(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Button(Secondary Fire)));
-			Damage(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Null, Max Health(Players In Slot(
-				Global.SlotOfPreviousTargetedPlayer, All Teams)) / 2);
+			Damage(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Null, Global.PassingDamage);
 			Small Message(All Players(All Teams), Custom String("{0}", Count Of(Filtered Array(All Players(Team Of(Players In Slot(
 				Global.SlotOfPreviousTargetedPlayer, All Teams))), True))));
 			"If the member is the only one left on their team, self pass"
 			If(Count Of(Filtered Array(All Living Players(Team Of(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams))), True))
 				== 1);
 				Global.SlotOfTargetedPlayer = Global.SlotOfPreviousTargetedPlayer;
+				Small Message(All Players(All Teams), Custom String("{0} this is all in your head", Players In Slot(Global.SlotOfTargetedPlayer,
+					All Teams)));
 			"Pass to another teammate"
 			Else;
 				Global.SlotOfTargetedPlayer = Slot Of(First Of(Sorted Array(Filtered Array(All Living Players(Team Of(Players In Slot(
@@ -1567,6 +1561,7 @@ rule("Ball reaches player")
 					Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Position Of(Current Array Element))))));
 			End;
 		Else;
+			Heal(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Null, Global.PassingDamage);
 			Global.SlotOfTargetedPlayer = Slot Of(First Of(Sorted Array(Filtered Array(All Living Players(Opposite Team Of(Team Of(
 				Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams)))), Slot Of(Current Array Element)
 				!= Global.SlotOfPreviousTargetedPlayer), Angle Between Vectors(Facing Direction Of(Players In Slot(Global.SlotOfTargetedPlayer,
@@ -1776,6 +1771,7 @@ rule("Team 1 Last Surviving")
 			Global.SlotOfTargetedPlayer = -1;
 			Big Message(All Players(All Teams), Custom String("Tiebreaker!"));
 		End;
+		Heal(All Players(All Teams), Null, 200);
 		Abort If(!Global.IsEnoughPlayersToStart);
 		Global.RoundInProgress = False;
 		All Players(All Teams).BouncePadCooldown = Global.BouncePadCooldownLength;
@@ -1839,6 +1835,7 @@ rule("Team 2 Last Surviving")
 			Global.SlotOfTargetedPlayer = -1;
 			Big Message(All Players(All Teams), Custom String("Tiebreaker!"));
 		End;
+		Heal(All Players(All Teams), Null, 200);
 		Abort If(!Global.IsEnoughPlayersToStart);
 		Global.RoundInProgress = False;
 		All Players(All Teams).BouncePadCooldown = Global.BouncePadCooldownLength;
