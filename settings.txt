@@ -1542,11 +1542,19 @@ rule("Ball reaches player")
 		Stop Chasing Global Variable(BallDirection);
 		Global.BallDirection = Facing Direction Of(Players In Slot(Global.SlotOfTargetedPlayer, All Teams));
 		Wait(0.001, Ignore Condition);
-		Global.SlotOfTargetedPlayer = Slot Of(First Of(Sorted Array(Filtered Array(All Living Players(Opposite Team Of(Team Of(
-			Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams)))), Slot Of(Current Array Element)
-			!= Global.SlotOfPreviousTargetedPlayer), Angle Between Vectors(Facing Direction Of(Players In Slot(Global.SlotOfTargetedPlayer,
-			All Teams)), Direction Towards(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Position Of(
-			Current Array Element))))));
+		If(Is Button Held(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Button(Secondary Fire)));
+			"Passing!"
+			Global.SlotOfTargetedPlayer = Slot Of(First Of(Sorted Array(Filtered Array(All Living Players(Team Of(Players In Slot(
+				Global.SlotOfPreviousTargetedPlayer, All Teams))), Slot Of(Current Array Element) != Global.SlotOfPreviousTargetedPlayer),
+				Angle Between Vectors(Facing Direction Of(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)), Direction Towards(
+				Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Position Of(Current Array Element))))));
+		Else;
+			Global.SlotOfTargetedPlayer = Slot Of(First Of(Sorted Array(Filtered Array(All Living Players(Opposite Team Of(Team Of(
+				Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams)))), Slot Of(Current Array Element)
+				!= Global.SlotOfPreviousTargetedPlayer), Angle Between Vectors(Facing Direction Of(Players In Slot(Global.SlotOfTargetedPlayer,
+				All Teams)), Direction Towards(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Position Of(
+				Current Array Element))))));
+		End;
 		Chase Global Variable At Rate(BallDirection, Direction Towards(Global.BallPosition, Eye Position(Players In Slot(
 			Global.SlotOfTargetedPlayer, All Teams))), 6, Destination and Rate);
 		Loop If Condition Is True;
