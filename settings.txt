@@ -151,6 +151,7 @@ subroutines
 {
 	0: CoolDeathEffects
 	1: UpdatedDeathEffects
+	2: DeflectFailed
 }
 
 rule("// SETTINGS")
@@ -317,7 +318,7 @@ rule("Init player variables")
 	actions
 	{
 		Event Player.IsDashEnabled = False;
-		Set Status(Event Player, Null, Invincible, 9999);
+		disabled Set Status(Event Player, Null, Invincible, 9999);
 		Skip If(Global.CooldownDashingEnabled, 1);
 		Set Ability 1 Enabled(Event Player, False);
 		Disable Built-In Game Mode Respawning(Event Player);
@@ -1511,22 +1512,29 @@ rule("Ball reaches player")
 
 	actions
 	{
-		Skip If(Is Using Ability 2(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)) || Is Using Ability 1(Players In Slot(
-			Global.SlotOfTargetedPlayer, All Teams)), 13);
-		Set Status(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Players In Slot(Global.SlotOfPreviousTargetedPlayer,
-			All Teams), Stunned, 1);
-		If(Global.ImprovedExplosions == True);
-			Call Subroutine(UpdatedDeathEffects);
-		Else;
-			Call Subroutine(CoolDeathEffects);
+		If(Is Button Held(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Button(Secondary Fire)) && Is Button Held(
+			Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Button(Ability 1)) && Is Button Held(Players In Slot(
+			Global.SlotOfTargetedPlayer, All Teams), Button(Ability 2)));
 		End;
-		Players In Slot(Global.SlotOfTargetedPlayer, All Teams).BouncePadCooldown = 0;
-		Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams).CurrentUltPercent += 15;
-		Kill(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams));
-		Players In Slot(Global.SlotOfTargetedPlayer, All Teams).PlayerDeaths += 1;
-		Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams).PlayerKills += 1;
-		Global.BallDeleteRequested = True;
-		Abort;
+		Skip If(Is Using Ability 2(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)) || Is Using Ability 1(Players In Slot(
+			Global.SlotOfTargetedPlayer, All Teams)), 1);
+		Call Subroutine(DeflectFailed);
+		disabled Skip If(Is Using Ability 2(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)) || Is Using Ability 1(Players In Slot(
+			Global.SlotOfTargetedPlayer, All Teams)), 13);
+		disabled Set Status(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Players In Slot(Global.SlotOfPreviousTargetedPlayer,
+			All Teams), Stunned, 1);
+		disabled If(Global.ImprovedExplosions == True);
+		disabled Call Subroutine(UpdatedDeathEffects);
+		disabled Else;
+		disabled Call Subroutine(CoolDeathEffects);
+		disabled End;
+		disabled Players In Slot(Global.SlotOfTargetedPlayer, All Teams).BouncePadCooldown = 0;
+		disabled Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams).CurrentUltPercent += 15;
+		disabled Kill(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams));
+		disabled Players In Slot(Global.SlotOfTargetedPlayer, All Teams).PlayerDeaths += 1;
+		disabled Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams).PlayerKills += 1;
+		disabled Global.BallDeleteRequested = True;
+		disabled Abort;
 		If(Is Using Ability 1(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)));
 			Set Status(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Null, Knocked Down, 1);
 			Teleport(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Global.BallPosition);
@@ -1544,6 +1552,8 @@ rule("Ball reaches player")
 		Global.BallDirection = Facing Direction Of(Players In Slot(Global.SlotOfTargetedPlayer, All Teams));
 		Wait(0.001, Ignore Condition);
 		If(Is Button Held(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Button(Secondary Fire)));
+			Damage(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Null, Max Health(Players In Slot(
+				Global.SlotOfPreviousTargetedPlayer, All Teams)) / 2);
 			Global.PassingPlayer = Team Of(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams));
 			Small Message(All Players(All Teams), Custom String("{0}", Global.PassingPlayer));
 			Small Message(All Players(All Teams), Custom String("{0}", Count Of(Filtered Array(All Players(Team Of(Players In Slot(
@@ -1569,6 +1579,33 @@ rule("Ball reaches player")
 		Chase Global Variable At Rate(BallDirection, Direction Towards(Global.BallPosition, Eye Position(Players In Slot(
 			Global.SlotOfTargetedPlayer, All Teams))), 6, Destination and Rate);
 		Loop If Condition Is True;
+	}
+}
+
+rule("Player Didn't Deflect - Kill")
+{
+	event
+	{
+		Subroutine;
+		DeflectFailed;
+	}
+
+	actions
+	{
+		Set Status(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Players In Slot(Global.SlotOfPreviousTargetedPlayer,
+			All Teams), Stunned, 1);
+		If(Global.ImprovedExplosions == True);
+			Call Subroutine(UpdatedDeathEffects);
+		Else;
+			Call Subroutine(CoolDeathEffects);
+		End;
+		Players In Slot(Global.SlotOfTargetedPlayer, All Teams).BouncePadCooldown = 0;
+		Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams).CurrentUltPercent += 15;
+		Kill(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams));
+		Players In Slot(Global.SlotOfTargetedPlayer, All Teams).PlayerDeaths += 1;
+		Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams).PlayerKills += 1;
+		Global.BallDeleteRequested = True;
+		Abort;
 	}
 }
 
