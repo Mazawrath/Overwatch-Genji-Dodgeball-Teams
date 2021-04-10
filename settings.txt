@@ -637,7 +637,8 @@ rule("Check for <2 players")
 	conditions
 	{
 		Is Game In Progress == True;
-		Number Of Players(All Teams) == 1;
+		disabled Number Of Players(All Teams) == 1;
+		(Number Of Players(Team 1) && Number Of Players(Team 2)) == False;
 	}
 
 	actions
@@ -664,7 +665,7 @@ rule("Wait for more players")
 
 	conditions
 	{
-		Number Of Players(All Teams) > 1;
+		(Number Of Players(Team 1) && Number Of Players(Team 2)) == True;
 		Global.IsEnoughPlayersToStart == False;
 	}
 
@@ -1627,7 +1628,7 @@ rule("Updated Death Effects Sub")
 	}
 }
 
-rule("Final duel")
+disabled rule("Final duel")
 {
 	event
 	{
@@ -1673,7 +1674,7 @@ rule("Final duel")
 	}
 }
 
-rule("Check for last player surviving")
+rule("Team 1 Last Surviving")
 {
 	event
 	{
@@ -1683,7 +1684,7 @@ rule("Check for last player surviving")
 	conditions
 	{
 		Is Game In Progress == True;
-		Number Of Living Players(All Teams) == 1;
+		Number Of Living Players(Team 2) == 0;
 		Global.IsEnoughPlayersToStart == True;
 	}
 
@@ -1708,7 +1709,70 @@ rule("Check for last player surviving")
 		End;
 		Stop Chasing Global Variable(BallSpawnCountdown);
 		Stop Chasing Player Variable(All Players(All Teams), BouncePadCooldown);
-		Big Message(All Players(All Teams), Custom String("{0} has won the round!", First Of(All Living Players(All Teams))));
+		Big Message(All Players(All Teams), Custom String("{0} has won the round!", Team 1));
+		Wait(2, Ignore Condition);
+		If(!Global.TieBreakerActive);
+			Resurrect(All Dead Players(All Teams));
+		Else;
+			"Kill anyone alive who doesn't have the highest score."
+			Kill(Filtered Array(All Living Players(All Teams), Score Of(Current Array Element) != Global.HighestScore), Null);
+			"During tiebreaker, only revive the people who have the same score as the highest score."
+			Resurrect(Filtered Array(All Dead Players(All Teams), Score Of(Current Array Element) == Global.HighestScore));
+			Wait(0.250, Ignore Condition);
+			Global.SlotOfTargetedPlayer = -1;
+			Big Message(All Players(All Teams), Custom String("Tiebreaker!"));
+		End;
+		Abort If(!Global.IsEnoughPlayersToStart);
+		Global.RoundInProgress = False;
+		All Players(All Teams).BouncePadCooldown = Global.BouncePadCooldownLength;
+		Global.SlotOfTargetedPlayer = -1;
+		Global.BallSpawnCountdown = 5;
+		Wait(1, Ignore Condition);
+		Global.RoundInProgress = True;
+		Skip If(!Global.BouncepadDashingEnabled, 2);
+		All Players(All Teams).IsDashEnabled = False;
+		Set Ability 1 Enabled(All Players(All Teams), False);
+		Chase Global Variable At Rate(BallSpawnCountdown, 0, 1, Destination and Rate);
+		Chase Player Variable At Rate(All Players(All Teams), BouncePadCooldown, 0, 1, Destination and Rate);
+	}
+}
+
+rule("Team 2 Last Surviving")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Is Game In Progress == True;
+		Number Of Living Players(Team 1) == 0;
+		Global.IsEnoughPlayersToStart == True;
+	}
+
+	actions
+	{
+		Global.IsInFinalDuel = False;
+		Modify Player Score(All Living Players(All Teams), 1);
+		Wait(0.250, Ignore Condition);
+		If((Match Time == 0 || Global.TieBreakerActive) && Global.GameEndEnabled);
+			"If there is alredy a tiebreaker, then the tiebreaker has ended."
+			disabled If(Global.TieBreakerActive);
+			disabled Break;
+			disabled End;
+			Global.HighestScore = Score Of(Last Of(Sorted Array(All Players(All Teams), Score Of(Current Array Element))));
+			"Check if there is more then 1 person with the highest score"
+			If(Count Of(Filtered Array(All Players(All Teams), Score Of(Current Array Element) == Global.HighestScore)) > 1);
+				"There is more then 1, activate tie breaker"
+				Global.TieBreakerActive = True;
+			Else;
+				Global.TieBreakerActive = False;
+			End;
+		End;
+		Stop Chasing Global Variable(BallSpawnCountdown);
+		Stop Chasing Player Variable(All Players(All Teams), BouncePadCooldown);
+		Big Message(All Players(All Teams), Custom String("{0} has won the round!", Team 2));
 		Wait(2, Ignore Condition);
 		If(!Global.TieBreakerActive);
 			Resurrect(All Dead Players(All Teams));
