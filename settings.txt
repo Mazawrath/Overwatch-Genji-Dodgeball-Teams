@@ -125,9 +125,7 @@ variables
 		46: RandomExplosionSounds
 		47: FinalDuelNuke
 		48: IncorrectTeam2ConfigCheck
-		49: IncorrectTeam2ConfigHUD
 		50: IncorrectTeam2ConfigHUDColor
-		51: InGameTeam2ConfigHUD
 		52: PassingDamage
 		53: IsPassingTeam1
 		54: IsPassingTeam2
@@ -722,6 +720,7 @@ rule("Players in unauthorized slots")
 	conditions
 	{
 		Global.IncorrectTeam2ConfigCheck == True;
+		Global.RoundInProgress == False;
 	}
 
 	actions
@@ -756,23 +755,15 @@ rule("Create unauthorized slots HUD")
 		Ongoing - Global;
 	}
 
-	conditions
-	{
-		Global.IncorrectTeam2ConfigCheck == True;
-		Global.RoundInProgress == False;
-	}
-
 	actions
 	{
-		Create HUD Text(All Players(All Teams), Custom String(
+		Create HUD Text(Filtered Array(All Players(All Teams), Global.IncorrectTeam2ConfigCheck && !Global.RoundInProgress), Custom String(
 			"Players are detected in slot(s) 1-3 on team 2! Game will not function in this state!"), Null, Null, Top, 0,
-			Global.IncorrectTeam2ConfigHUDColor, Color(White), Color(White), Color, Default Visibility);
-		Global.IncorrectTeam2ConfigHUD = Last Text ID;
-		Create In-World Text(All Players(All Teams), Custom String(
-			"The players in slot(s) 1-3 on team 2 must be moved to slots 4-6 or removed from the team!"), Vector(X Component Of(
-			Global.CircleCenter), Y Component Of(Global.CircleCenter) + 0, Z Component Of(Global.CircleCenter)), 2, Clip Against Surfaces,
-			Color, Global.IncorrectTeam2ConfigHUDColor, Default Visibility);
-		Global.InGameTeam2ConfigHUD = Last Text ID;
+			Global.IncorrectTeam2ConfigHUDColor, Color(White), Color(White), Visible To and Color, Default Visibility);
+		Create In-World Text(Filtered Array(All Players(All Teams), Global.IncorrectTeam2ConfigCheck && !Global.RoundInProgress),
+			Custom String("The players in slot(s) 1-3 on team 2 must be moved to slots 4-6 or removed from the team!"), Vector(
+			X Component Of(Global.CircleCenter), Y Component Of(Global.CircleCenter) + 0, Z Component Of(Global.CircleCenter)), 2,
+			Clip Against Surfaces, Visible To and Color, Global.IncorrectTeam2ConfigHUDColor, Default Visibility);
 	}
 }
 
@@ -797,8 +788,6 @@ rule("Pulse HUD color")
 		End;
 		Wait(0.500, Ignore Condition);
 		Loop If Condition Is True;
-		Destroy HUD Text(Global.IncorrectTeam2ConfigHUD);
-		Destroy In-World Text(Global.InGameTeam2ConfigHUD);
 	}
 }
 
@@ -1780,8 +1769,8 @@ rule("Team 1 Last Surviving")
 		End;
 		Heal(All Players(All Teams), Null, 200);
 		Abort If(!Global.IsEnoughPlayersToStart);
-		Abort If(Global.IncorrectTeam2ConfigCheck);
 		Global.RoundInProgress = False;
+		Abort If(Global.IncorrectTeam2ConfigCheck);
 		All Players(All Teams).BouncePadCooldown = Global.BouncePadCooldownLength;
 		Global.SlotOfTargetedPlayer = -1;
 		Global.BallSpawnCountdown = 5;
@@ -1845,8 +1834,8 @@ rule("Team 2 Last Surviving")
 		End;
 		Heal(All Players(All Teams), Null, 200);
 		Abort If(!Global.IsEnoughPlayersToStart);
-		Abort If(Global.IncorrectTeam2ConfigCheck);
 		Global.RoundInProgress = False;
+		Abort If(Global.IncorrectTeam2ConfigCheck);
 		All Players(All Teams).BouncePadCooldown = Global.BouncePadCooldownLength;
 		Global.SlotOfTargetedPlayer = -1;
 		Global.BallSpawnCountdown = 5;
