@@ -2,7 +2,7 @@ settings
 {
 	main
 	{
-		Description: "Genji Dodgeball v1.0.0T. Developed by u/Mazawath. Numerous updates by u/FearlessKat, u/Blink, u/TheRedstoneBlaze,  ELIMINATED#1572, and tumtum9000#1232. Deflect the ball when it is red to target someone else! Use jump pads to get air!"
+		Description: "Genji Dodgeball v1.1.0T. Developed by u/Mazawath. Numerous updates by u/FearlessKat, u/Blink, u/TheRedstoneBlaze,  ELIMINATED#1572, and tumtum9000#1232. Deflect the ball when it is red to target someone else! Use jump pads to get air!"
 	}
 
 	lobby
@@ -69,6 +69,11 @@ settings
 		}
 	}
 
+	workshop
+	{
+		Allow Match to End At Time: On
+	}
+
 	extensions
 	{
 		Buff and Debuff Sounds
@@ -131,9 +136,11 @@ variables
 		48: IncorrectTeam2ConfigCheck
 		49: IncorrectTeam1ConfigCheck
 		50: IncorrectTeam2ConfigHUDColor
+		51: AllowMatchEnd
 		52: PassingDamage
 		53: IsPassingTeam1
 		54: IsPassingTeam2
+		55: ScoreToWin
 
 	player:
 		0: hasMoved
@@ -168,6 +175,12 @@ rule("// SETTINGS")
 
 	actions
 	{
+		Global.AllowMatchEnd = Workshop Setting Toggle(Custom String("Teams Settings"), Custom String("Allow Match to End At Score"), True,
+			0);
+		Global.ScoreToWin = Workshop Setting Integer(Custom String("Teams Settings"), Custom String("Score to Win"), 10, 1, 30, 1);
+		"Currently, there is an issue where the server will end, based on how many players there are. If there are less it will take longer to crash. But it WILL crash. This rule simply lets there be a \"winner\" at the end VS crashing in the middle of Final Duel."
+		Global.GameEndEnabled = Workshop Setting Toggle(Custom String("Teams Settings"), Custom String("Allow Match to End At Time"),
+			False, 2);
 		Global.WatermarkEnabled = Workshop Setting Toggle(Custom String("Visual Settings"), Custom String("Enable Watermark"), True, 0);
 		Global.CooldownDashingEnabled = True;
 		Global.RedGreenColorblindMode = Workshop Setting Toggle(Custom String("Visual Settings"), Custom String(
@@ -347,7 +360,7 @@ rule("Init global variables")
 		Global.SlotOfPreviousTargetedPlayer = -1;
 		Global.BallSpawnCountdown = 3;
 		Disable Built-In Game Mode Scoring;
-		disabled Disable Built-In Game Mode Completion;
+		Disable Built-In Game Mode Completion;
 		Disable Built-In Game Mode Music;
 		Disable Built-In Game Mode Announcer;
 		Global.BouncePadStrength = 30;
@@ -359,8 +372,6 @@ rule("Init global variables")
 		Global.IsInFinalDuel = False;
 		Global.BouncePadCooldownLength = 3;
 		Global.BallPosition = Vector(0, -1, 0);
-		"Currently, there is an issue where the server will end, based on how many players there are. If there are less it will take longer to crash. But it WILL crash. This rule simply lets there be a \"winner\" at the end VS crashing in the middle of Final Duel."
-		Global.GameEndEnabled = False;
 		Global.ExplosionSoundVolume = 30;
 		Global.ImprovedExplosions = True;
 		Global.RandomExplosionSounds = True;
@@ -460,6 +471,9 @@ rule("Create global HUD elements")
 			Color(White), Color(White), Visible To and String, Default Visibility);
 		Create HUD Text(All Players(All Teams), Null, Null, Custom String("Discord.gg/GenjiDodgeball"), Left, 0, Color(White), Color(
 			White), Color(White), Visible To and String, Default Visibility);
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String(
+			"Hold secondary fire while deflecting to pass the ball to another teammate!"), Right, 0, Color(White), Color(White), Color(
+			White), Visible To and String, Default Visibility);
 	}
 }
 
@@ -538,7 +552,7 @@ rule("Create bounce pads")
 	}
 }
 
-rule("Create ball & targeted effect- TESTING")
+rule("Create ball & targeted effect")
 {
 	event
 	{
@@ -605,51 +619,6 @@ rule("Create ball & targeted effect- TESTING")
 	}
 }
 
-disabled rule("Create ball & targeted effect")
-{
-	event
-	{
-		Ongoing - Global;
-	}
-
-	conditions
-	{
-		Is Game In Progress == True;
-	}
-
-	actions
-	{
-		Create Effect(Filtered Array(All Players(All Teams), Slot Of(Current Array Element) != Global.SlotOfTargetedPlayer), Orb, Color(
-			White), Global.BallPosition, 0.400, Visible To Position and Radius);
-		If(!Global.RedGreenColorblindMode);
-			Create Effect(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Orb, Color(Red), Global.BallPosition, 0.400,
-				Visible To Position and Radius);
-			Create Effect(Filtered Array(All Players(All Teams), Slot Of(Current Array Element) != Global.SlotOfTargetedPlayer), Good Aura,
-				Color(Red), Players In Slot(Global.SlotOfTargetedPlayer, All Teams), 1, Visible To Position and Radius);
-			Create Effect(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Good Aura, Color(Red), Players In Slot(
-				Global.SlotOfTargetedPlayer, All Teams), 1, Visible To Position and Radius);
-			Create Effect(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Good Aura, Color(Red), Global.BallPosition, 1,
-				Visible To Position and Radius);
-		Else;
-			Create Effect(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Orb, Color(Yellow), Global.BallPosition, 0.400,
-				Visible To Position and Radius);
-			Create Effect(All Players(All Teams), Good Aura, Color(Yellow), Players In Slot(Global.SlotOfTargetedPlayer, All Teams), 1,
-				Visible To Position and Radius);
-			Create Effect(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Good Aura, Color(Yellow), Eye Position(Players In Slot(
-				Global.SlotOfTargetedPlayer, All Teams)), 1, Visible To Position and Radius);
-		End;
-		"ball trail change color with speed"
-		disabled Create Effect(All Players(All Teams), Bad Aura, Color(Blue), Global.BallPosition, 1, Visible To Position and Radius);
-		disabled Global.BallSmoke = Last Created Entity;
-		disabled Create Beam Effect(All Players(All Teams), Bad Beam, Global.PrevBallPos, Global.BallPosition, Color(Blue),
-			Visible To Position and Radius);
-		disabled Global.BallTail1 = Last Created Entity;
-		disabled Create Beam Effect(All Players(All Teams), Bad Beam, Global.PrevBallPos, Global.PrevBallPos2, Color(Blue),
-			Visible To Position and Radius);
-		disabled Global.BallTail2 = Last Created Entity;
-	}
-}
-
 rule("Create ball countdown HUD")
 {
 	event
@@ -699,7 +668,7 @@ rule("// Not enough players testing")
 	actions
 	{
 		Skip If(!Global.WatermarkEnabled, 1);
-		Create HUD Text(All Players(All Teams), Null, Custom String("Original by u/Mazawrath. Version v1.0.0T"), Null, Left, -1000, Color(
+		Create HUD Text(All Players(All Teams), Null, Custom String("Original by u/Mazawrath. Version v1.1.0T"), Null, Left, -1000, Color(
 			White), Color(Aqua), Color(White), Visible To and String, Visible Always);
 	}
 }
@@ -1912,7 +1881,7 @@ rule("Team 1 Last Surviving")
 			disabled End;
 			Global.HighestScore = Score Of(Last Of(Sorted Array(All Players(All Teams), Score Of(Current Array Element))));
 			"Check if there is more then 1 person with the highest score"
-			If(Count Of(Filtered Array(All Players(All Teams), Score Of(Current Array Element) == Global.HighestScore)) > 1);
+			If(Team Score(Team 1) == Team Score(Team 2));
 				"There is more then 1, activate tie breaker"
 				Global.TieBreakerActive = True;
 			Else;
@@ -1978,7 +1947,7 @@ rule("Team 2 Last Surviving")
 			disabled End;
 			Global.HighestScore = Score Of(Last Of(Sorted Array(All Players(All Teams), Score Of(Current Array Element))));
 			"Check if there is more then 1 person with the highest score"
-			If(Count Of(Filtered Array(All Players(All Teams), Score Of(Current Array Element) == Global.HighestScore)) > 1);
+			If(Team Score(Team 1) == Team Score(Team 2));
 				"There is more then 1, activate tie breaker"
 				Global.TieBreakerActive = True;
 			Else;
@@ -2355,5 +2324,43 @@ rule("No Undermaps")
 	{
 		Global.BallDirection *= Vector(1, 0, 1);
 		Play Effect(All Players(All Teams), Ring Explosion, Color(White), Global.BallPosition, 2);
+	}
+}
+
+rule("Team 1 Win")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.AllowMatchEnd == True;
+		Team Score(Team 1) == Global.ScoreToWin;
+	}
+
+	actions
+	{
+		Declare Team Victory(Team 1);
+	}
+}
+
+rule("Team 2 Win")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.AllowMatchEnd == True;
+		Team Score(Team 2) == Global.ScoreToWin;
+	}
+
+	actions
+	{
+		Declare Team Victory(Team 2);
 	}
 }
