@@ -1572,17 +1572,16 @@ rule("Ball reaches player")
 	actions
 	{
 		If(Is Button Held(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Button(Secondary Fire)));
-			Small Message(All Players(All Teams), Health(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)));
 			"If they don't have enough health, kill em"
 			If(Health(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)) <= 100);
-				Small Message(All Players(All Teams), Custom String("fail pass"));
 				Call Subroutine(DeflectFailed);
 				Abort;
 			End;
 		End;
 		Skip If(Is Using Ability 2(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)) || Is Using Ability 1(Players In Slot(
-			Global.SlotOfTargetedPlayer, All Teams)), 1);
+			Global.SlotOfTargetedPlayer, All Teams)), 2);
 		Call Subroutine(DeflectFailed);
+		Abort;
 		disabled Skip If(Is Using Ability 2(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)) || Is Using Ability 1(Players In Slot(
 			Global.SlotOfTargetedPlayer, All Teams)), 13);
 		If(Is Using Ability 1(Players In Slot(Global.SlotOfTargetedPlayer, All Teams)));
@@ -1652,6 +1651,7 @@ rule("Player Didn't Deflect - Kill")
 
 	actions
 	{
+		Heal(All Living Players(All Teams), Null, 200);
 		Global.IsPassingTeam1 = False;
 		Global.IsPassingTeam2 = False;
 		Set Status(Players In Slot(Global.SlotOfTargetedPlayer, All Teams), Players In Slot(Global.SlotOfPreviousTargetedPlayer,
