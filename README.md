@@ -1,5 +1,5 @@
 # Overwatch-Genji-Dodgeball-Teams
-**Current Version: v1.1.0T** - GDB Deathmatch Equivalence: v5.4.0
+**Current Version: v1.1.0T** - GDB Deathmatch Equivalence: v5.4.0  
 **Game Settings Code: 85RCP**
 
 Genji Dodgeball is a minigame inspired by the TF2 game pyro dodgeball.
