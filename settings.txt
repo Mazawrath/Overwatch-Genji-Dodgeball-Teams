@@ -27,6 +27,9 @@ settings
 		Team Deathmatch
 		{
 			Game Length In Minutes: 15
+			Imbalanced Team Score To Win: On
+			Team 1 Score To Win: 10
+			Team 2 Score To Win: 10
 
 			enabled maps
 			{
@@ -595,6 +598,9 @@ rule("Create ball & targeted effect- TESTING")
 		disabled Global.BallTail2 = Last Created Entity;
 		Create Effect(Filtered Array(All Players(All Teams), Global.IsPassingTeam1 || Global.IsPassingTeam2), Good Aura, Color(Sky Blue),
 			Global.BallPosition, 1, Visible To Position and Radius);
+		Create Effect(Filtered Array(All Players(All Teams), Slot Of(Current Array Element) != Global.SlotOfTargetedPlayer && (
+			Global.IsPassingTeam1 || Global.IsPassingTeam2)), Good Aura, Color(Sky Blue), Players In Slot(Global.SlotOfTargetedPlayer,
+			All Teams), 1, Visible To Position and Radius);
 	}
 }
 
@@ -935,7 +941,7 @@ rule("Pulse HUD color")
 		Else;
 			Global.IncorrectTeam2ConfigHUDColor = Color(White);
 		End;
-		Wait(0.500, Ignore Condition);
+		Wait(1.500, Ignore Condition);
 		Loop If Condition Is True;
 	}
 }
