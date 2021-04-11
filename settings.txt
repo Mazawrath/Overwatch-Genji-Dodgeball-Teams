@@ -1602,8 +1602,8 @@ rule("Ball reaches player")
 		Global.BallDirection = Facing Direction Of(Players In Slot(Global.SlotOfTargetedPlayer, All Teams));
 		Wait(0.001, Ignore Condition);
 		If(Is Button Held(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Button(Secondary Fire)));
-			Play Effect(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Ring Explosion, Color(Sky Blue), Position Of(
-				Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams)), 10);
+			Play Effect(All Players(All Teams), Ring Explosion, Color(Sky Blue), Position Of(Players In Slot(
+				Global.SlotOfPreviousTargetedPlayer, All Teams)), 10);
 			Play Effect(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Moira Fade Disappear Sound, Color(White), Position Of(
 				Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams)), 100);
 			Set Player Health(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Global.PassingDamage);
