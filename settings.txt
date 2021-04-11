@@ -751,7 +751,7 @@ rule("Wait for more players")
 	}
 }
 
-rule("Check for players in unauthorized slots")
+rule("Check for players in unauthorized slots - Team 2")
 {
 	event
 	{
@@ -776,7 +776,7 @@ rule("Check for players in unauthorized slots")
 	}
 }
 
-rule("Players in unauthorized slots")
+rule("Players in unauthorized slots - Team 2")
 {
 	event
 	{
@@ -814,7 +814,7 @@ rule("Players in unauthorized slots")
 	}
 }
 
-rule("Create unauthorized slots HUD")
+rule("Create unauthorized slots HUD - Team 2")
 {
 	event
 	{
