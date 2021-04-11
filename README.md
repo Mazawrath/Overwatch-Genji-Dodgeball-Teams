@@ -7,7 +7,7 @@ When the ball is red it is targeting you! Use your deflect to target someone els
 
 ## Please Read Before Playing  
 ### This game is meant to be a 3v3 game. This game will not function with anyone in slots 1-3 on team 2 or slots 4-6 on team 1.  
-Due to limitations of the game, teams must be laid out like this
+Due to limitations of the game, teams must be laid out like this:  
 ![Correct layout](https://cdn.discordapp.com/attachments/720371417509789728/830655043903684688/Untitled.png)  
 A maximum of 3 players on team 1, in slots 1-3.  
 A maximum of 3 players on team 2, in slots 4-6.  
