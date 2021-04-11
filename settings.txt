@@ -596,8 +596,9 @@ rule("Create ball & targeted effect- TESTING")
 		disabled Create Beam Effect(All Players(All Teams), Bad Beam, Global.PrevBallPos, Global.PrevBallPos2, Color(Blue),
 			Visible To Position and Radius);
 		disabled Global.BallTail2 = Last Created Entity;
-		Create Effect(Filtered Array(All Players(All Teams), Global.IsPassingTeam1 || Global.IsPassingTeam2), Good Aura, Color(Sky Blue),
-			Global.BallPosition, 1, Visible To Position and Radius);
+		Create Effect(Filtered Array(Filtered Array(All Players(All Teams), Slot Of(Current Array Element) != Global.SlotOfTargetedPlayer),
+			Global.IsPassingTeam1 || Global.IsPassingTeam2), Good Aura, Color(Sky Blue), Global.BallPosition, 1,
+			Visible To Position and Radius);
 		Create Effect(Filtered Array(All Players(All Teams), Slot Of(Current Array Element) != Global.SlotOfTargetedPlayer && (
 			Global.IsPassingTeam1 || Global.IsPassingTeam2)), Good Aura, Color(Sky Blue), Players In Slot(Global.SlotOfTargetedPlayer,
 			All Teams), 1, Visible To Position and Radius);
