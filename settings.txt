@@ -2,7 +2,7 @@ settings
 {
 	main
 	{
-		Description: "Genji Dodgeball v5.4.0. Developed by u/Mazawath. Numerous updates by u/FearlessKat, u/Blink, u/TheRedstoneBlaze,  ELIMINATED#1572, and tumtum9000#1232. Deflect the ball when it is red to target someone else! Use jump pads to get air!"
+		Description: "Genji Dodgeball v1.0.0T. Developed by u/Mazawath. Numerous updates by u/FearlessKat, u/Blink, u/TheRedstoneBlaze,  ELIMINATED#1572, and tumtum9000#1232. Deflect the ball when it is red to target someone else! Use jump pads to get air!"
 	}
 
 	lobby
@@ -68,6 +68,7 @@ settings
 
 	extensions
 	{
+		Buff and Debuff Sounds
 		Kinetic Explosion Effects
 		Explosion Sounds
 	}
@@ -591,6 +592,8 @@ rule("Create ball & targeted effect- TESTING")
 		disabled Create Beam Effect(All Players(All Teams), Bad Beam, Global.PrevBallPos, Global.PrevBallPos2, Color(Blue),
 			Visible To Position and Radius);
 		disabled Global.BallTail2 = Last Created Entity;
+		Create Effect(Filtered Array(All Players(All Teams), Global.IsPassingTeam1 || Global.IsPassingTeam2), Good Aura, Color(Sky Blue),
+			Global.BallPosition, 1, Visible To Position and Radius);
 	}
 }
 
@@ -688,7 +691,7 @@ rule("// Not enough players testing")
 	actions
 	{
 		Skip If(!Global.WatermarkEnabled, 1);
-		Create HUD Text(All Players(All Teams), Null, Custom String("Original by u/Mazawrath. Version v5.4.0"), Null, Left, -1000, Color(
+		Create HUD Text(All Players(All Teams), Null, Custom String("Original by u/Mazawrath. Version v1.0.0T"), Null, Left, -1000, Color(
 			White), Color(Aqua), Color(White), Visible To and String, Visible Always);
 	}
 }
@@ -1599,6 +1602,10 @@ rule("Ball reaches player")
 		Global.BallDirection = Facing Direction Of(Players In Slot(Global.SlotOfTargetedPlayer, All Teams));
 		Wait(0.001, Ignore Condition);
 		If(Is Button Held(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Button(Secondary Fire)));
+			Play Effect(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Ring Explosion, Color(Sky Blue), Position Of(
+				Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams)), 10);
+			Play Effect(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Moira Fade Disappear Sound, Color(White), Position Of(
+				Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams)), 100);
 			Set Player Health(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams), Global.PassingDamage);
 			"Check which team is passing"
 			If(Team Of(Players In Slot(Global.SlotOfPreviousTargetedPlayer, All Teams)) == Team 1);
@@ -1740,7 +1747,7 @@ rule("Updated Death Effects Sub")
 	}
 }
 
-disabled rule("Final duel")
+rule("Final duel")
 {
 	event
 	{
