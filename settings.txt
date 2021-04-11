@@ -356,7 +356,7 @@ rule("Init global variables")
 		Global.BouncePadCooldownLength = 3;
 		Global.BallPosition = Vector(0, -1, 0);
 		"Currently, there is an issue where the server will end, based on how many players there are. If there are less it will take longer to crash. But it WILL crash. This rule simply lets there be a \"winner\" at the end VS crashing in the middle of Final Duel."
-		Global.GameEndEnabled = True;
+		Global.GameEndEnabled = False;
 		Global.ExplosionSoundVolume = 30;
 		Global.ImprovedExplosions = True;
 		Global.RandomExplosionSounds = True;
@@ -1757,7 +1757,9 @@ rule("Final duel")
 	conditions
 	{
 		Is Game In Progress == True;
-		Count Of(Filtered Array(All Living Players(All Teams), Current Array Element.hasMoved)) == 2;
+		disabled Count Of(Filtered Array(All Living Players(All Teams), Current Array Element.hasMoved)) == 2;
+		(Count Of(Filtered Array(All Living Players(Team 1), Current Array Element.hasMoved)) == 1 && Count Of(Filtered Array(
+			All Living Players(Team 2), Current Array Element.hasMoved)) == 1) == True;
 		Global.IsEnoughPlayersToStart == True;
 		Global.IsInFinalDuel == False;
 	}
