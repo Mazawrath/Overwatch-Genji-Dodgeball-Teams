@@ -126,6 +126,7 @@ variables
 		46: RandomExplosionSounds
 		47: FinalDuelNuke
 		48: IncorrectTeam2ConfigCheck
+		49: IncorrectTeam1ConfigCheck
 		50: IncorrectTeam2ConfigHUDColor
 		52: PassingDamage
 		53: IsPassingTeam1
@@ -751,6 +752,88 @@ rule("Wait for more players")
 	}
 }
 
+rule("Check for players in unauthorized slots - Team 1")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Is Game In Progress == True;
+	}
+
+	actions
+	{
+		"DO NOT DISABLE THIS. Don't say I didn't warn you."
+		If(Players In Slot(3, Team 1) == True || Players In Slot(4, Team 1) == True || Players In Slot(5, Team 1) == True);
+			Global.IncorrectTeam1ConfigCheck = True;
+		Else;
+			Global.IncorrectTeam1ConfigCheck = False;
+		End;
+		Wait(1, Ignore Condition);
+		Loop;
+	}
+}
+
+rule("Players in unauthorized slots - Team 1")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.IncorrectTeam1ConfigCheck == True;
+		Global.RoundInProgress == False;
+	}
+
+	actions
+	{
+		If(Players In Slot(3, Team 1) == True);
+			Small Message(All Players(All Teams), Custom String(
+				"{0} is not allowed in this slot! The game will not function properly with a player in slot 4 on team 1!", Players In Slot(3,
+				Team 1)));
+			Wait(1, Ignore Condition);
+		End;
+		If(Players In Slot(4, Team 1) == True);
+			Small Message(All Players(All Teams), Custom String(
+				"{0} is not allowed in this slot! The game will not function properly with a player in slot 5 on team 1!", Players In Slot(4,
+				Team 1)));
+			Wait(1, Ignore Condition);
+		End;
+		If(Players In Slot(5, Team 1) == True);
+			Small Message(All Players(All Teams), Custom String(
+				"{0} is not allowed in this slot! The game will not function properly with a player in slot 6 on team 1!", Players In Slot(5,
+				Team 1)));
+			Wait(1, Ignore Condition);
+		End;
+		Wait(5, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Create unauthorized slots HUD - Team 1")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		Create HUD Text(Filtered Array(All Players(All Teams), Global.IncorrectTeam1ConfigCheck && !Global.RoundInProgress), Custom String(
+			"Players are detected in slot(s) 4-6 on team 1! Game will not function in this state!"), Null, Null, Top, 0,
+			Global.IncorrectTeam2ConfigHUDColor, Color(White), Color(White), Visible To and Color, Default Visibility);
+		Create In-World Text(Filtered Array(All Players(All Teams), Global.IncorrectTeam1ConfigCheck && !Global.RoundInProgress),
+			Custom String("The players in slot(s) 4-6 on team 1 must be moved to slots 4-6 or removed from the team!"), Vector(
+			X Component Of(Global.CircleCenter), Y Component Of(Global.CircleCenter) + 1, Z Component Of(Global.CircleCenter)), 2,
+			Clip Against Surfaces, Visible To and Color, Global.IncorrectTeam2ConfigHUDColor, Default Visibility);
+	}
+}
+
 rule("Check for players in unauthorized slots - Team 2")
 {
 	event
@@ -842,7 +925,7 @@ rule("Pulse HUD color")
 
 	conditions
 	{
-		Global.IncorrectTeam2ConfigCheck == True;
+		(Global.IncorrectTeam1ConfigCheck || Global.IncorrectTeam2ConfigCheck) == True;
 	}
 
 	actions
@@ -1495,6 +1578,7 @@ rule("Start round")
 	conditions
 	{
 		Global.IsEnoughPlayersToStart == True;
+		Global.IncorrectTeam1ConfigCheck == False;
 		Global.IncorrectTeam2ConfigCheck == False;
 		Is Game In Progress == True;
 	}
@@ -1846,6 +1930,7 @@ rule("Team 1 Last Surviving")
 		Heal(All Players(All Teams), Null, 200);
 		Abort If(!Global.IsEnoughPlayersToStart);
 		Global.RoundInProgress = False;
+		Abort If(Global.IncorrectTeam1ConfigCheck);
 		Abort If(Global.IncorrectTeam2ConfigCheck);
 		All Players(All Teams).BouncePadCooldown = Global.BouncePadCooldownLength;
 		Global.SlotOfTargetedPlayer = -1;
@@ -1911,6 +1996,7 @@ rule("Team 2 Last Surviving")
 		Heal(All Players(All Teams), Null, 200);
 		Abort If(!Global.IsEnoughPlayersToStart);
 		Global.RoundInProgress = False;
+		Abort If(Global.IncorrectTeam1ConfigCheck);
 		Abort If(Global.IncorrectTeam2ConfigCheck);
 		All Players(All Teams).BouncePadCooldown = Global.BouncePadCooldownLength;
 		Global.SlotOfTargetedPlayer = -1;
