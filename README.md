@@ -1,3 +1,6 @@
+# **This version is now oudated, and has been merged with the main Genji Dodgeball branch.**
+## [You can go get the latest version here.](https://github.com/Mazawrath/Overwatch-Genji-Dodgeball)
+
 # Overwatch-Genji-Dodgeball-Teams
 **Current Version: v1.1.0T** - GDB Deathmatch Equivalence: v5.4.0  
 **Game Settings Code: 85RCP**
