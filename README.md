@@ -1,4 +1,4 @@
-# **This version is now oudated, and has been merged with the main Genji Dodgeball branch.**
+# **This version is now oudated, and has been merged with the main Genji Dodgeball repository.**
 ## [You can go get the latest version here.](https://github.com/Mazawrath/Overwatch-Genji-Dodgeball)
 
 # Overwatch-Genji-Dodgeball-Teams
